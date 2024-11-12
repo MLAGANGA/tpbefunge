@@ -13,9 +13,30 @@
 (def random (Random.))  ;; Para manejar direcciones aleatorias
 (def max-pasos 1000)    ;; Para evitar bucles infinitos (creo que el maze.bf es un caso)
 
+(defn leer-archivo [filename]
+  (with-open [reader (io/reader filename)]
+    (let [lineas (doall (line-seq reader))
+          max-ancho (apply max (map count lineas))]
+      (reset! grilla (vec (map #(vec (concat % (repeat (- max-ancho (count %)) \space))) lineas))))))
+
+(defn envolver [val max]
+  (mod (+ val max) max))  
+
+(defn mover []
+  (let [[desplazamiento-x desplazamiento-y] (direcciones @direccion)]
+    (swap! x #(envolver (+ % desplazamiento-x) (count (first @grilla)))) 
+    (swap! y #(envolver (+ % desplazamiento-y) (count @grilla)))))  
+
+(defn apilar [val]
+  (swap! pila conj val))
+
+(defn desapilar []
+  (let [val (first @pila)]
+    (swap! pila rest)
+    (or val 0)))
 
 
-;; Ciclo principal de ejecución, se detiene en @
+;; Ciclo principal de ejecucion, termina cuando aparece @
 (defn ejecutar [filename]
   (leer-archivo filename)
   (while (not= (get-in @grilla [@y @x]) \@)
