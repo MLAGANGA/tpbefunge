@@ -1,5 +1,5 @@
 (ns tpbefunge.main
-  (:require [befunge-interpreter.core :refer [ejecutar]])
+  (:require [tpbefunge.core :refer [ejecutar]])
   (:gen-class))
 
 (defn -main [& args]
