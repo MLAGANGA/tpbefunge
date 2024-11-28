@@ -19,42 +19,42 @@
 
 ;Parser archivo y generación de grilla 80x25
 (defn leer-archivo [filename]
-      (with-open [reader (io/reader filename)]
-                 (let [max-ancho (:x dimensiones)
-                       max-alto (:y dimensiones)
-                       lineas (take max-alto (doall (line-seq reader)))
-                       grilla-aux (vec (map #(vec (concat (take max-ancho %)
-                                                          (repeat (- max-ancho (count %)) \space)))
-                                            lineas))]
-                      (vec (concat grilla-aux (repeat (- max-alto (count grilla-aux))
-                                                      (vec (repeat max-ancho \space))))))))
+  (with-open [reader (io/reader filename)]
+    (let [max-ancho (:x dimensiones)
+          max-alto (:y dimensiones)
+          lineas (take max-alto (doall (line-seq reader)))
+          grilla-aux (vec (map #(vec (concat (take max-ancho %)
+                                             (repeat (- max-ancho (count %)) \space)))
+                               lineas))]
+      (vec (concat grilla-aux (repeat (- max-alto (count grilla-aux))
+                                      (vec (repeat max-ancho \space))))))))
 
 ;funcion superficie toroide
 (defn envolver [val max]
-      (mod (+ val max) max))
+  (mod (+ val max) max))
 
 ;recibe direccion y pc, devuelve vector con el nuevo pc
 (defn mover [direccion pc]
-      (let [[dx dy] (get direcciones direccion)
-            [x y] pc
-            limite-ancho (:x dimensiones)
-            limite-alto (:y dimensiones)]
-           [(envolver (+ x dx) limite-ancho) (envolver (+ y dy) limite-alto)]))
+  (let [[dx dy] (get direcciones direccion)
+        [x y] pc
+        limite-ancho (:x dimensiones)
+        limite-alto (:y dimensiones)]
+    [(envolver (+ x dx) limite-ancho) (envolver (+ y dy) limite-alto)]))
 
 ;funcion auxiliar para operaciones binarias. Recibe pila y una función binaria.
 ;aplica función a los dos primeros valores desapilados, apila el resultado y devuelve la nueva pila.
 (defn operacion-binaria [pila f]
-      (let [[a p1] (desapilar pila)
-            [b p2] (desapilar p1)]
-           (apilar p2 (f b a))))
+  (let [[a p1] (desapilar pila)
+        [b p2] (desapilar p1)]
+    (apilar p2 (f b a))))
 
 ; Inicialización del mapa que contiene el estado del programa Befunge93.
 (defn crear-mapa-estado []
-      {:pila (crear-pila)
-       :grilla []
-       :direccion :right
-       :en-comillas? false
-       :pc [0 0]})
+  {:pila (crear-pila)
+   :grilla []
+   :direccion :right
+   :en-comillas? false
+   :pc [0 0]})
 
 ; Procesamiento de instrucciones
 (defn procesar-instruccion [mapa-estado instr]
@@ -122,7 +122,7 @@
         \~ (assoc mapa-estado :pila (apilar pila (int (first (read-line)))))
         \space mapa-estado
         (if (Character/isDigit instr)
-        ;(if (<= (int \0) (int instr) (int \9))
+          ;(if (<= (int \0) (int instr) (int \9))
           (assoc mapa-estado :pila (apilar pila (Character/digit instr 10)))
           ;si no se satisfizo ninguna de las anteriores condiciones, se devuelve el estado tal cual entró
           mapa-estado)))))
@@ -134,20 +134,20 @@
     (assoc mapa-actualizado :pc nuevo-pc)))
 
 (defn obtener-instr [mapa-estado]
-      (let [[x y] (:pc mapa-estado)]
-           (get-in (:grilla mapa-estado) [y x])))
+  (let [[x y] (:pc mapa-estado)]
+    (get-in (:grilla mapa-estado) [y x])))
 
 (defn ejecutar [filename]
-      (let [mapa-estado (crear-mapa-estado)]
-           (loop [iter 0
-                  estado (assoc mapa-estado :grilla (leer-archivo filename))]
-                 (let [instr (obtener-instr estado)]
-                      (if (and (not= instr \@) (< iter max-iter))
-                        (recur (inc iter) (paso estado instr))
-                        (println "\nPrograma finalizado."))))))
+  (let [mapa-estado (crear-mapa-estado)]
+    (loop [iter 0
+           estado (assoc mapa-estado :grilla (leer-archivo filename))]
+      (let [instr (obtener-instr estado)]
+        (if (and (not= instr \@) (< iter max-iter))
+          (recur (inc iter) (paso estado instr))
+          (do
+            (time (println "Programa finalizado.")))))))
 
-(defn -main [& args]
-      (if (or (empty? args) (not (clojure.string/ends-with? (first args) ".bf")))
-        (println "ERROR: ¡Especifica un archivo .bf como entrada!")
-        (time (ejecutar (first args)))))
-
+  (defn -main [& args]
+    (if (or (empty? args) (not (clojure.string/ends-with? (first args) ".bf")))
+      (println "Por favor ingrese un archivo .bf válido.")
+      (ejecutar (first args)))))
