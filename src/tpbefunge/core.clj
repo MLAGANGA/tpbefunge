@@ -51,7 +51,7 @@
 ; Inicialización del mapa que contiene el estado del programa Befunge93.
 (defn crear-mapa-estado []
   {:pila (crear-pila)
-   :grilla []
+   :grilla [[]]
    :direccion :right
    :en-comillas? false
    :pc [0 0]})
@@ -100,11 +100,12 @@
         \\ (let [[a p1] (desapilar pila)
                  [b p2] (desapilar p1)]
              (assoc mapa-estado :pila (apilar (apilar p2 a) b)))
-        \$ (assoc mapa-estado :pila (pop pila))
+        \$ (assoc mapa-estado :pila (second(desapilar pila)))
         \. (let [[num p] (desapilar pila)]
              (do (print (str num " ")) (assoc mapa-estado :pila p)))
         \, (let [[chr p] (desapilar pila)]
-             (do (print (char chr)) (assoc mapa-estado :pila p)))
+             (do  (if (not= chr 0) (print (char chr)))
+                  (assoc mapa-estado :pila p)))
         \# (assoc mapa-estado :pc (mover direccion pc))
         \p (let [[y p1] (desapilar pila)
                  [x p2] (desapilar p1)
@@ -122,7 +123,6 @@
         \~ (assoc mapa-estado :pila (apilar pila (int (first (read-line)))))
         \space mapa-estado
         (if (Character/isDigit instr)
-          ;(if (<= (int \0) (int instr) (int \9))
           (assoc mapa-estado :pila (apilar pila (Character/digit instr 10)))
           ;si no se satisfizo ninguna de las anteriores condiciones, se devuelve el estado tal cual entró
           mapa-estado)))))
@@ -144,10 +144,8 @@
       (let [instr (obtener-instr estado)]
         (if (and (not= instr \@) (< iter max-iter))
           (recur (inc iter) (paso estado instr))
-          (do
-            (time (println "Programa finalizado.")))))))
-
-  (defn -main [& args]
-    (if (or (empty? args) (not (clojure.string/ends-with? (first args) ".bf")))
-      (println "Por favor ingrese un archivo .bf válido.")
-      (ejecutar (first args)))))
+          (println "\nPrograma finalizado."))))))
+(defn -main [& args]
+  (if (or (empty? args) (not (clojure.string/ends-with? (first args) ".bf")))
+    (println "ERROR: ¡Especifica un archivo .bf como entrada!")
+    (time (ejecutar (first args)))))
